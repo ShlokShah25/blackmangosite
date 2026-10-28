@@ -1,14 +1,8 @@
-# Black Mango — website redesign prototype
+# Black Mango — floating video & room try-on
 
-A clickable redesign of [blackmangoobjects.com](https://blackmangoobjects.com): black-and-mango look, welcome animation, the full catalogue, custom rug requests, and a try-in-your-room tool for every product.
+Additions for [blackmangoobjects.com](https://blackmangoobjects.com) that drop into the current Shopify theme.
 
-## Deploy
-`index.html` is the whole site in one file (images embedded). Deploy the repo root as a static site on Vercel, Netlify, Cloudflare Pages or GitHub Pages. No build step.
-
-## Edit
-- Page markup, styles and scripts: `source/site.html`
-- Product images: `source/assets/`
-- Rebuild `index.html` after editing: `python3 source/build.py`
-
-## Prototype notes
-Cart, checkout and forms work on the page only; nothing is sent anywhere. Real orders and messages arrive when this is rebuilt as the store's Shopify theme.
+- `index.html`: overview page (deploy the repo root as a static site to share it).
+- `videos/`: floating silhouette loops, 16:9 and 4:5, MP4 and WebM.
+- `shopify-tryon/`: the room try-on section for the theme. Start with [`shopify-tryon/INSTALL.md`](shopify-tryon/INSTALL.md). A working demo is in `shopify-tryon/demo/`.
+- `redesign/`: the earlier full-site redesign prototype, kept for reference.

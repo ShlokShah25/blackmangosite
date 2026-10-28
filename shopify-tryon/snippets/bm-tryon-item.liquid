@@ -1,0 +1,45 @@
+{%- comment -%}
+  One product as JSON for the room try-on.
+  Usage: {% render 'bm-tryon-item', p: product %}
+
+  Try-on picture, in order of preference:
+    1. product metafield custom.tryon_image (a transparent PNG/WebP of just the piece)
+    2. a file in Content > Files named tryon-<product-handle>.png
+    3. the product's main photo (the script falls back to it if 1 and 2 are missing)
+  Placement comes from metafield custom.tryon_placement (floor, sofa, stand or table),
+  otherwise from the product type: rugs lie on the floor, cushions sit on the sofa,
+  glassware stands on a table, everything else stands on the floor.
+{%- endcomment -%}
+{%- liquid
+  assign kind = p.type | downcase
+  assign placement = p.metafields.custom.tryon_placement.value | default: ''
+  if placement == blank
+    if kind contains 'rug'
+      assign placement = 'floor'
+    elsif kind contains 'cushion'
+      assign placement = 'sofa'
+    elsif kind contains 'glass'
+      assign placement = 'table'
+    else
+      assign placement = 'stand'
+    endif
+  endif
+
+  if p.metafields.custom.tryon_image != blank
+    assign tryon = p.metafields.custom.tryon_image.value | image_url: width: 1400
+  else
+    assign tryon_file = 'tryon-' | append: p.handle | append: '.png'
+    assign tryon = tryon_file | file_url
+  endif
+
+  assign fallback = ''
+  if p.featured_image
+    assign fallback = p.featured_image | image_url: width: 1400
+  endif
+
+  assign price = p.price | money
+  if p.price_varies
+    assign price = 'From ' | append: price
+  endif
+-%}
+{"id":{{ p.id }},"handle":{{ p.handle | json }},"title":{{ p.title | json }},"url":{{ p.url | json }},"price":{{ price | json }},"available":{{ p.available | json }},"variant":{{ p.selected_or_first_available_variant.id | json }},"placement":{{ placement | json }},"image":{{ tryon | json }},"fallback":{{ fallback | json }}}

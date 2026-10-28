@@ -1,0 +1,60 @@
+/* Black Mango — Room try-on. Inherits the theme's fonts; colours come from the section's settings. */
+bm-room-tryon{display:block;--bmto-ink:#111;--bmto-bg:#fff;--bmto-line:#d9d4cc;--bmto-muted:#6b645c;--bmto-accent:#111;--bmto-accent-ink:#fff;color:var(--bmto-ink)}
+bm-room-tryon *{box-sizing:border-box}
+.bmto-section{padding-block:clamp(40px,6vw,80px)}
+.bmto-wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bmto-head{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;max-width:640px}
+.bmto-head h2{margin:0}
+.bmto-head p{margin:0;color:var(--bmto-muted)}
+
+.bmto{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.bmto-stage-wrap{flex:1.6 1 520px;min-width:0}
+.bmto-stage{position:relative;width:100%;max-width:100%;border-radius:14px;overflow:hidden;background:#2b2622;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;outline:none}
+.bmto-stage:focus-visible{box-shadow:0 0 0 3px var(--bmto-accent)}
+.bmto-bg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.bmto-item{position:absolute;max-width:none;transform-origin:50% 50%;cursor:grab;filter:drop-shadow(8px 6px 5px rgba(0,0,0,.35));will-change:transform,left,top}
+.bmto-item.is-floor{filter:drop-shadow(0 14px 12px rgba(0,0,0,.38))}
+.bmto-item:active{cursor:grabbing}
+.bmto-hint{position:absolute;left:12px;top:12px;max-width:calc(100% - 24px);padding:7px 12px;border-radius:99px;background:rgba(17,17,17,.78);color:#fff;font-size:12px;line-height:1.3;pointer-events:none}
+.bmto-note{margin:10px 2px 0;font-size:12px;color:var(--bmto-muted)}
+
+.bmto-panel{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
+.bmto-step{display:flex;flex-direction:column;gap:10px}
+.bmto-label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.bmto-small{font-size:12px;color:var(--bmto-muted)}
+.bmto-small a{color:inherit;text-decoration:underline}
+.bmto-row{display:flex;gap:8px;flex-wrap:wrap}
+.bmto-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;border:1.5px solid var(--bmto-ink);background:transparent;color:var(--bmto-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;transition:opacity .2s,background .2s,color .2s}
+.bmto-btn:hover{opacity:.85}
+.bmto-btn:disabled{opacity:.45;cursor:not-allowed}
+.bmto-btn--solid{background:var(--bmto-accent);border-color:var(--bmto-accent);color:var(--bmto-accent-ink)}
+.bmto-file{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.bmto-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.bmto-chip{min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--bmto-line);background:transparent;color:var(--bmto-ink);font:inherit;font-size:13px;cursor:pointer}
+.bmto-chip[aria-pressed="true"]{background:var(--bmto-ink);border-color:var(--bmto-ink);color:var(--bmto-bg)}
+.bmto-thumbs{display:flex;gap:8px;flex-wrap:wrap}
+.bmto-thumb{width:64px;height:64px;padding:6px;border-radius:12px;border:1.5px solid var(--bmto-line);background:#f4f1ec;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.bmto-thumb img{max-width:100%;max-height:100%;object-fit:contain}
+.bmto-thumb[aria-pressed="true"]{border-color:var(--bmto-accent);box-shadow:0 0 0 1.5px var(--bmto-accent)}
+.bmto-range{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.bmto-range input{width:100%;accent-color:var(--bmto-accent);min-height:28px}
+.bmto-buy{display:flex;flex-direction:column;gap:10px;padding-top:18px;border-top:1px solid var(--bmto-line)}
+.bmto-buy-info{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.bmto-name{font-weight:600;color:inherit;text-decoration:none}
+.bmto-name:hover{text-decoration:underline}
+.bmto-price{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* "View in your room" button + full-screen dialog on product pages */
+.bmto-open{display:inline-flex;align-items:center;gap:8px}
+.bmto-dialog{width:100%;max-width:100%;height:100%;max-height:100%;margin:0;padding:0;border:0;background:var(--bmto-bg);color:var(--bmto-ink)}
+.bmto-dialog::backdrop{background:rgba(0,0,0,.5)}
+.bmto-dialog-in{min-height:100%;padding-block:calc(env(safe-area-inset-top,0px) + 16px) calc(env(safe-area-inset-bottom,0px) + 24px)}
+.bmto-dialog-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+.bmto-dialog-bar h2{margin:0;font-size:clamp(22px,3vw,32px)}
+.bmto-close{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--bmto-line);background:transparent;color:var(--bmto-ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex:none}
+html.bmto-lock{overflow:hidden}
+/* Shield the try-on from theme-wide image and button styles */
+bm-room-tryon img.bmto-item{padding:0;margin:0;border:0;border-radius:0;background:none;height:auto;min-width:0;max-height:none;box-shadow:none;object-fit:fill;display:block}
+bm-room-tryon .bmto-thumb img{width:auto;height:auto;padding:0;margin:0;border:0;border-radius:0;background:none;box-shadow:none;max-width:100%;max-height:100%;display:block}
+bm-room-tryon canvas.bmto-bg{max-width:none}
+@media (max-width:640px){.bmto{gap:18px}.bmto-thumb{width:56px;height:56px}}

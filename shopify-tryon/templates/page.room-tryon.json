@@ -1,0 +1,12 @@
+{
+  "sections": {
+    "main": {
+      "type": "bm-room-tryon",
+      "settings": {
+        "heading": "See it in your room",
+        "product_button": false
+      }
+    }
+  },
+  "order": ["main"]
+}
