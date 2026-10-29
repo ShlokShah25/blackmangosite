@@ -5,6 +5,9 @@ D = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, D)
 from refs import bg, grade
 FPS, SCENE = 30, 4.0
 TAU = 2 * np.pi
+COVER = [None]
+def cover(A):
+    COVER[0] = A if COVER[0] is None else np.maximum(COVER[0], A)
 
 def load(name, width=None, height=None):
     im = Image.open(os.path.join(D, 'cut', name + '.png')).convert('RGBA')
@@ -47,7 +50,7 @@ def blit(canvas, prgba, cx, cy, angle=0.0, scale=1.0, shadow=None):
         S = cv2.GaussianBlur(cv2.warpAffine(A, np.float32([[1, 0, dx], [0, 1, dy]]), (W, H)), (0, 0), max(.5, blur)) * op
         canvas[:] = canvas * (1 - S[..., None]) + np.array(tone, np.float32) * S[..., None]
     canvas[:] = canvas * (1 - A[..., None]) + np.clip(out[..., :3], 0, 255)
-    return A
+    cover(A); return A
 
 def gradeP(p, **kw):
     a = p[..., 3:4] / 255.0; rgb = np.where(a > 0, p[..., :3] / np.maximum(a, 1e-3), 0)
@@ -63,15 +66,15 @@ def scene_wall(asp):
     wv = Wave(p, 'flag', 9, p.shape[0] * 0.9, 2.0, 0.12)
     def render(t):
         c = base.copy(); d = 38 + 26 * np.sin(TAU * t / SCENE)            # distance off the wall
-        blit(c, wv.frame(t), W / 2, H * (0.53 if asp == '4x5' else 0.5) - 0.3 * d, -1.5 + 1.2 * np.sin(TAU * t / SCENE),
+        blit(c, wv.frame(t), W / 2 if asp == '4x5' else W * 0.71, H * (0.53 if asp == '4x5' else 0.5) - 0.3 * d, -1.5 + 1.2 * np.sin(TAU * t / SCENE),
              1 + d / 2500, (d * 1.1, d * 1.4, 6 + d * 0.3, 0.72 - d * 0.002, (18, 16, 14)))
         return c
     return render
 
 def scene_crossing(asp):
     B = bg('street'); base = B if asp == '4x5' else B[820:1720]
-    H, W = base.shape[:2]; cy0 = 1640 if asp == '4x5' else 585
-    cx0 = 900 if asp == '4x5' else 1060
+    H, W = base.shape[:2]; cy0 = 1470 if asp == '4x5' else 585
+    cx0 = 1090 if asp == '4x5' else 1060
     p = gradeP(load('balance-rug', width=560 if asp == '4x5' else 400), sat=0.82, mul=(1.05, 0.98, 0.86), bright=0.92)
     wv = Wave(p, 'carpet', 13, p.shape[1] * 1.1, 2.0, 0.2)
     def render(t):
@@ -101,7 +104,7 @@ def scene_roof(asp):
         out = cv2.warpPerspective(f, MP, (W, H), flags=cv2.INTER_LINEAR, borderValue=0); A = out[..., 3] / 255.
         S = cv2.GaussianBlur(np.roll(np.roll(A, 14, 0), -10, 1), (0, 0), 12) * .42
         c = c * (1 - S[..., None]) + np.array([40, 40, 44], np.float32) * S[..., None]
-        c = c * (1 - A[..., None]) + np.clip(out[..., :3], 0, 255)
+        c = c * (1 - A[..., None]) + np.clip(out[..., :3], 0, 255); cover(A)
         lip = np.zeros((H, W), np.uint8); cv2.line(lip, TL, TR, 255, 9, cv2.LINE_AA)
         lv = lip[..., None] / 255. * .9; return c * (1 - lv) + np.array([235, 236, 230], np.float32) * lv
     return render
@@ -125,6 +128,7 @@ def scene_sky(asp):
 
 SCENES = [scene_wall, scene_crossing, scene_roof, scene_sky]
 
+TYPE = None
 def render(asp, out_w, out_h, path):
     rs = [s(asp) for s in SCENES]; n = int(FPS * SCENE)
     rng = np.random.default_rng(1)
@@ -132,11 +136,15 @@ def render(asp, out_w, out_h, path):
                            '-c:v', 'libx264', '-crf', '19', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path], stdin=subprocess.PIPE)
     for si, r in enumerate(rs):
         for f in range(n):
-            t = f / FPS; c = r(t); H, W = c.shape[:2]
+            t = f / FPS; COVER[0] = None; c = r(t); H, W = c.shape[:2]
             z = 1.0 + 0.045 * t / SCENE                                       # slow push-in per scene
             cw, ch = W / z, H / z; x0, y0 = (W - cw) / 2, (H - ch) / 2
             M = np.float32([[out_w / cw, 0, -x0 * out_w / cw], [0, out_h / ch, -y0 * out_h / ch]])
             o = cv2.warpAffine(np.clip(c, 0, 255), M, (out_w, out_h), flags=cv2.INTER_AREA)
+            if TYPE:
+                a = cv2.warpAffine(COVER[0], M, (out_w, out_h), flags=cv2.INTER_AREA)[..., None]
+                sh, tt = TYPE[si]; sh, tt = sh[..., None] * (1 - a), tt[..., None] * (1 - a)
+                o = o * (1 - sh) + 10 * sh; o = o * (1 - tt) + np.array([255, 252, 246], np.float32) * tt
             o += rng.normal(0, 1.8, (out_h, out_w, 1)).astype(np.float32)
             ff.stdin.write(np.clip(o, 0, 255).astype(np.uint8).tobytes())
             if f == n // 2: Image.fromarray(np.clip(o, 0, 255).astype(np.uint8)).save(path.replace('.mp4', f'-s{si}.jpg'), quality=85)
@@ -148,4 +156,8 @@ if __name__ == '__main__':
     which = sys.argv[1:] or ['4x5', '16x9']
     for a in which:
         w, h = (1080, 1350) if a == '4x5' else (1920, 1080)
-        render(a, w, h, os.path.join(D, 'film', f'black-mango-editorial-{a}.mp4'))
+        if os.environ.get('TYPE'):
+            from type import overlay
+            TYPE = [overlay(w, h, k) for k in range(4)]
+            render(a, w, h, os.path.join(D, 'film', f'black-mango-objects-with-presence-{a}.mp4'))
+        else: render(a, w, h, os.path.join(D, 'film', f'black-mango-editorial-{a}.mp4'))
